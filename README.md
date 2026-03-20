@@ -26,3 +26,4 @@ python manage.py runserver
 - `docs/seed.md` - Datos base y comando de carga.
 - `docs/arquitectura.md` - Arquitectura actual y relaciones entre apps.
 - `docs/templates.md` - Vistas, herencia y orden de assets.
+- `docs/themes.md` - Sistema de modo claro/oscuro y variables CSS.

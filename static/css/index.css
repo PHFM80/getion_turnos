@@ -1,5 +1,5 @@
 .hero {
-  background: linear-gradient(135deg, rgba(244, 185, 66, 0.18), rgba(20, 35, 56, 0));
+  background: var(--app-hero-gradient);
 }
 
 .hero-card {
@@ -15,11 +15,11 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: rgba(244, 185, 66, 0.2);
+  background: var(--app-hero-spot);
 }
 
 .features {
-  background: rgba(10, 18, 30, 0.6);
+  background: var(--app-feature-bg);
 }
 
 .feature-card {

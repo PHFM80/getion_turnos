@@ -1,0 +1,107 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+<div class="dashboard-welcome">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <div>
+      <h1 class="h3 mb-1">{{ title }}</h1>
+      <p class="text-muted mb-0">{{ description }}</p>
+    </div>
+    <a href="{% url 'dashboard_admin_complementos' %}" class="btn btn-outline-light btn-sm">Volver</a>
+  </div>
+
+  {% if messages %}
+    <div class="d-flex flex-column gap-2 mb-3">
+      {% for message in messages %}
+        <div class="alert alert-success mb-0" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="welcome-card">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="d-flex flex-column gap-3" data-filter-form>
+          {% csrf_token %}
+          {% if field_ordered %}
+            {% for field in field_ordered %}
+              {% if field.field.widget.input_type == "checkbox" %}
+                <div class="form-check">
+                  {{ field }}
+                  <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                </div>
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+              {% else %}
+                <div>
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% for field in form %}
+              {% if field.field.widget.input_type == "checkbox" %}
+                <div class="form-check">
+                  {{ field }}
+                  <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                </div>
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+              {% else %}
+                <div>
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="welcome-card">
+        <h2 class="h6 mb-3">{{ items_title }}</h2>
+        {% if filter_select_id %}
+          <div class="complemento-list" data-filter-list data-filter-select="{{ filter_select_id }}">
+            {% for item in items_payload %}
+              <div class="complemento-item" data-parent-id="{{ item.parent_id }}" style="display: none;">{{ item.label }}</div>
+            {% empty %}
+              <p class="text-muted mb-0">Todavia no hay registros cargados.</p>
+            {% endfor %}
+            <p class="text-muted mb-0" data-filter-empty style="display: none;">{{ filter_empty_text }}</p>
+          </div>
+        {% else %}
+          <div class="complemento-list">
+            {% for item in items %}
+              <div class="complemento-item">{{ item }}</div>
+            {% empty %}
+              <p class="text-muted mb-0">Todavia no hay registros cargados.</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

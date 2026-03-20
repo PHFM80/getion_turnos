@@ -5,8 +5,46 @@
 <div class="dashboard-welcome">
   <h1 class="h3 mb-2">Complementos</h1>
   <p class="text-muted mb-4">Rubros, geo, planes, suscripciones y servicios base.</p>
-  <div class="welcome-card">
-    <p class="mb-0">Esta vista centralizara el alta y edicion de catalogos.</p>
+  <div class="welcome-card mb-4">
+    <p class="mb-0">Selecciona el complemento que queres cargar o editar.</p>
+  </div>
+  <div class="row g-3">
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_rubros' %}">
+        <h2 class="h6 mb-1">Rubros</h2>
+        <p class="text-muted mb-0">Categorias base para empresas y servicios.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_paises' %}">
+        <h2 class="h6 mb-1">Paises</h2>
+        <p class="text-muted mb-0">Paises disponibles en la plataforma.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_provincias' %}">
+        <h2 class="h6 mb-1">Provincias</h2>
+        <p class="text-muted mb-0">Provincias asociadas a cada pais.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_localidades' %}">
+        <h2 class="h6 mb-1">Localidades</h2>
+        <p class="text-muted mb-0">Localidades asociadas a cada provincia.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_planes' %}">
+        <h2 class="h6 mb-1">Planes</h2>
+        <p class="text-muted mb-0">Planes base para suscripciones.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <a class="complemento-card" href="{% url 'dashboard_admin_complemento_servicios_base' %}">
+        <h2 class="h6 mb-1">Servicios base</h2>
+        <p class="text-muted mb-0">Servicios estandar por rubro.</p>
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

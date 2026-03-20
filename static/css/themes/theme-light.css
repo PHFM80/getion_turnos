@@ -1,0 +1,24 @@
+[data-theme="light"] {
+  --app-bg: #f5f7fb;
+  --app-surface: #ffffff;
+  --app-accent: #f4b942;
+  --app-accent-dark: #d59a21;
+  --app-text: #1d2433;
+  --app-muted: #5a6472;
+  --app-header-bg: rgba(255, 255, 255, 0.92);
+  --app-header-border: rgba(15, 23, 42, 0.12);
+  --app-footer-bg: rgba(248, 250, 252, 0.9);
+  --app-footer-border: rgba(15, 23, 42, 0.12);
+  --app-card-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  --app-bg-gradient: radial-gradient(circle at top, #ffffff 0%, #f5f7fb 55%, #eef2f7 100%);
+  --app-border: rgba(15, 23, 42, 0.12);
+  --app-outline: rgba(15, 23, 42, 0.3);
+  --app-surface-hover: rgba(15, 23, 42, 0.06);
+  --app-sidebar-bg: rgba(255, 255, 255, 0.95);
+  --app-sidebar-border: rgba(15, 23, 42, 0.12);
+  --app-dashboard-main-bg: rgba(245, 247, 251, 0.8);
+  --app-sidebar-active-bg: rgba(244, 185, 66, 0.2);
+  --app-hero-gradient: linear-gradient(135deg, rgba(244, 185, 66, 0.18), rgba(255, 255, 255, 0));
+  --app-hero-spot: rgba(244, 185, 66, 0.18);
+  --app-feature-bg: rgba(255, 255, 255, 0.7);
+}
