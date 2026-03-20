@@ -1,0 +1,1 @@
+// JS especifico del dashboard.

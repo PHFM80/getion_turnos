@@ -1,0 +1,141 @@
+:root {
+  --app-bg: #0f1b2b;
+  --app-surface: #142338;
+  --app-accent: #f4b942;
+  --app-accent-dark: #e0a52f;
+  --app-text: #f8f9fb;
+  --app-muted: #b4bfd0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #1a2c44 0%, #0f1b2b 55%, #0b1523 100%);
+  color: var(--app-text);
+  min-height: 100vh;
+}
+
+.bg-app {
+  background-color: var(--app-bg);
+}
+
+.text-app {
+  color: var(--app-text);
+}
+
+.app-header {
+  background: rgba(20, 35, 56, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--app-accent);
+  color: #1d1d1d;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-name {
+  font-weight: 600;
+}
+
+.nav-link-app {
+  color: var(--app-text);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-link-app:hover {
+  color: var(--app-accent);
+}
+
+.app-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 18, 30, 0.9);
+}
+
+.footer-link {
+  color: var(--app-muted);
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  color: var(--app-text);
+}
+
+.btn-primary {
+  background-color: var(--app-accent);
+  border-color: var(--app-accent);
+  color: #1d1d1d;
+}
+
+.btn-primary:hover {
+  background-color: var(--app-accent-dark);
+  border-color: var(--app-accent-dark);
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--app-text);
+}
+
+.hero-card,
+.auth-card,
+.feature-card,
+.welcome-card {
+  background: var(--app-surface);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: var(--app-accent);
+  margin-bottom: 1rem;
+}
+
+.auth {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 1199px) {
+  .app-header .btn {
+    padding: 0.35rem 0.75rem;
+  }
+}
+
+@media (max-width: 991px) {
+  .brand-name {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-card {
+    margin-top: 2rem;
+  }
+
+  .auth {
+    min-height: auto;
+  }
+}

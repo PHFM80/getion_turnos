@@ -1,0 +1,27 @@
+.hero {
+  background: linear-gradient(135deg, rgba(244, 185, 66, 0.18), rgba(20, 35, 56, 0));
+}
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(244, 185, 66, 0.2);
+}
+
+.features {
+  background: rgba(10, 18, 30, 0.6);
+}
+
+.feature-card {
+  min-height: 160px;
+}

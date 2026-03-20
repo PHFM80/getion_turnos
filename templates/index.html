@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion Turnos | Inicio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "css/index.css" %}">
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <p class="eyebrow">Agenda inteligente para empresas</p>
+        <h1 class="display-4 fw-semibold">Organiza turnos, servicios y clientes en un solo lugar.</h1>
+        <p class="lead text-muted">Administra disponibilidad, confirma turnos y automatiza comunicaciones sin perder el control.</p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="/login/" class="btn btn-primary btn-lg">Ingresar</a>
+          <a href="#" class="btn btn-outline-light btn-lg">Solicitar Demo</a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="hero-card">
+          <div class="hero-card-body">
+            <h2 class="h5">Resumen rapido</h2>
+            <ul class="list-unstyled mt-3 mb-0">
+              <li class="d-flex justify-content-between border-bottom py-2">
+                <span>Empresas activas</span>
+                <strong>+120</strong>
+              </li>
+              <li class="d-flex justify-content-between border-bottom py-2">
+                <span>Turnos mensuales</span>
+                <strong>+4.500</strong>
+              </li>
+              <li class="d-flex justify-content-between py-2">
+                <span>Notificaciones enviadas</span>
+                <strong>98% entregadas</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container py-5">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <h3 class="h5">Agenda clara</h3>
+          <p class="text-muted">Horarios, bloqueos y capacidad por empresa siempre visibles.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <h3 class="h5">Servicios configurables</h3>
+          <p class="text-muted">Crea servicios base y personaliza la oferta por empresa.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <h3 class="h5">Comunicaciones</h3>
+          <p class="text-muted">Mensajeria y notificaciones para confirmar y recordar turnos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static "js/index.js" %}"></script>
+{% endblock %}
