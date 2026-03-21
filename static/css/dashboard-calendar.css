@@ -1,0 +1,96 @@
+.calendar-container {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: var(--app-card-shadow);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.calendar-head {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--app-muted);
+}
+
+.calendar-head.sunday {
+  color: var(--app-accent);
+}
+
+.calendar-cell {
+  min-height: 86px;
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  padding: 0.55rem;
+  background: var(--app-dashboard-main-bg);
+  cursor: pointer;
+}
+
+.calendar-cell.sunday {
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.calendar-day {
+  font-weight: 700;
+  color: var(--app-text);
+  margin-bottom: 0.35rem;
+}
+
+.calendar-today {
+  border-color: var(--app-accent) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.22) !important;
+}
+
+.calendar-selected {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.22) !important;
+}
+
+.calendar-item {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--app-text);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 0.18rem 0.45rem;
+  margin-bottom: 0.22rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-empty {
+  font-size: 0.72rem;
+  color: var(--app-muted);
+}
+
+.activity-card {
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--app-surface);
+}
+
+@media (max-width: 768px) {
+  .calendar-cell {
+    min-height: 68px;
+    padding: 0.45rem;
+  }
+
+  .calendar-item {
+    font-size: 0.68rem;
+  }
+}
+
+.calendar-view-switch .btn.active {
+  background: var(--app-accent);
+  border-color: var(--app-accent);
+  color: #0b1120;
+}

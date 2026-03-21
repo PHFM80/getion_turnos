@@ -34,6 +34,7 @@ from empresas.models import Rubro
 from empresas.models import Empresa
 from geo.models import Localidad, Pais, Provincia
 from servicios.models import ServicioBase
+from agenda.models import Turno
 from suscripciones.models import Pago, Plan, Suscripcion
 
 
@@ -160,15 +161,46 @@ def dashboard(request):
     if empresas.count() == 1:
         request.session["empresa_activa_id"] = empresas.first().empresa_id
 
-    empresa_nombre = get_active_empresa_name(user, request)
+    empresa_activa = get_active_usuario_empresa(user, request)
+    if not empresa_activa:
+        logout(request)
+        return redirect("login")
+
+    selected_date_str = request.GET.get("fecha", "")
+    selected_date = timezone.now().date()
+    try:
+        if selected_date_str:
+            selected_date = date.fromisoformat(selected_date_str)
+    except ValueError:
+        selected_date = timezone.now().date()
+
+    turnos_qs = Turno.objects.filter(empresa_id=empresa_activa.empresa_id).select_related(
+        "cliente",
+        "servicio_empresa",
+    ).order_by("fecha", "hora_inicio")
+
+    calendar_items = []
+    for turno in turnos_qs:
+        cliente_nombre = f"{turno.cliente.nombre} {turno.cliente.apellido}".strip() or turno.cliente.email
+        label = f"{turno.hora_inicio.strftime('%H:%M')} - {turno.servicio_empresa.nombre} - {cliente_nombre}"
+        calendar_items.append(
+            {
+                "id": turno.id,
+                "date": turno.fecha.isoformat(),
+                "label": label,
+                "estado": turno.estado,
+            }
+        )
 
     return render(
         request,
         'dashboard/index.html',
         {
             'welcome_name': nombre or user.email,
-            'role_label': role_label_for(user),
-            'company_name': empresa_nombre,
+            'role_label': role_label_for_usuario_empresa(empresa_activa),
+            'company_name': empresa_activa.empresa.nombre,
+            'selected_date': selected_date,
+            'calendar_items': calendar_items,
         },
     )
 
@@ -751,19 +783,37 @@ def role_label_for(user):
     return "Usuario"
 
 
+def role_label_for_usuario_empresa(usuario_empresa):
+    if not usuario_empresa:
+        return "Usuario"
+    if usuario_empresa.rol == UsuarioEmpresa.ROL_DUENO:
+        return "Propietario"
+    return "Usuario"
+
+
 def get_active_empresa_name(user, request=None):
+    usuario_empresa = get_active_usuario_empresa(user, request)
+    if not usuario_empresa:
+        return None
+    return usuario_empresa.empresa.nombre
+
+
+def get_active_usuario_empresa(user, request=None):
     empresas = get_user_empresas(user)
     if not empresas:
         return None
+
     if request:
         empresa_id = request.session.get("empresa_activa_id")
         if empresa_id:
             selected = empresas.filter(empresa_id=empresa_id).first()
             if selected and selected.activo and selected.empresa.activo and empresa_habilitada_por_suscripcion(selected.empresa):
-                return selected.empresa.nombre
+                return selected
+
     for usuario_empresa in empresas:
         if usuario_empresa.activo and usuario_empresa.empresa.activo and empresa_habilitada_por_suscripcion(usuario_empresa.empresa):
-            return usuario_empresa.empresa.nombre
+            return usuario_empresa
+
     return None
 
 

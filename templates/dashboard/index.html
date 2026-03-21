@@ -1,12 +1,66 @@
 {% extends "dashboard/base.html" %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/dashboard-calendar.css' %}">
+{% endblock %}
+
 {% block dashboard_content %}
-<div class="dashboard-welcome">
-  <h1 class="h3 mb-2">Panel de empresa</h1>
-  <p class="text-muted mb-4">Gestiona turnos y servicios de tu empresa.</p>
-  <div class="welcome-card">
-    <p class="mb-0">Este es un panel basico. Agrega modulos cuando esten definidos los flujos.</p>
+<div class="dashboard-welcome" id="dashboard-root" data-selected-date="{{ selected_date|date:'Y-m-d' }}">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Calendario de turnos</h1>
+      <p class="text-muted mb-0">Vista mensual o semanal de turnos de la empresa.</p>
+    </div>
+    <div class="btn-group calendar-view-switch" role="group" aria-label="Cambiar vista">
+      <button id="view-month" type="button" class="btn btn-outline-light btn-sm active">Mes</button>
+      <button id="view-week" type="button" class="btn btn-outline-light btn-sm">Semana</button>
+    </div>
   </div>
+
+  <section class="calendar-container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <button id="prev-btn" type="button" class="btn btn-outline-light btn-sm">◀</button>
+        <button id="today-btn" type="button" class="btn btn-outline-light btn-sm">Hoy</button>
+      </div>
+      <div class="text-center">
+        <h3 id="calendar-title" class="h5 mb-0"></h3>
+        <div id="today-label" class="small text-muted"></div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="next-btn" type="button" class="btn btn-outline-light btn-sm">▶</button>
+      </div>
+    </div>
+
+    <div class="calendar-grid mb-2">
+      <div class="calendar-head sunday">Dom</div>
+      <div class="calendar-head">Lun</div>
+      <div class="calendar-head">Mar</div>
+      <div class="calendar-head">Mie</div>
+      <div class="calendar-head">Jue</div>
+      <div class="calendar-head">Vie</div>
+      <div class="calendar-head">Sab</div>
+    </div>
+
+    <div id="calendar-grid" class="calendar-grid"></div>
+  </section>
+
+  <section class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+      <h3 class="h5">Turnos del dia</h3>
+      <p class="text-muted mb-3">Dia seleccionado: <span id="selected-date-label"></span></p>
+      <div id="activities-list" class="d-flex flex-column gap-2"></div>
+      <p id="activities-empty" class="text-muted mb-0 d-none">No hay turnos para este dia.</p>
+    </div>
+  </section>
 </div>
+
+{{ calendar_items|json_script:"calendar-data" }}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/dashboard-calendar.js' %}"></script>
 {% endblock %}
