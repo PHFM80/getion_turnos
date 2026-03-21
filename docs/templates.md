@@ -1,36 +1,45 @@
 # Templates
 
-Este documento describe las vistas HTML creadas y el orden correcto de carga de assets.
+Este documento describe las vistas HTML y el orden de carga de assets.
 
 **Estructura y herencia**
 ```
 base.html
 ├── index.html
 │   └── login.html
+├── servicios.html
+│   └── servicios_turno.html
 └── dashboard/base.html
-    └── dashboard/index.html
+    ├── dashboard/index.html
+    ├── dashboard/seleccionar_empresa.html
+    └── dashboard/admin/*
 ```
 
 - `templates/base.html`
   - Base global.
-  - Incluye Bootstrap, tipografia y `static/css/base.css`.
-  - Carga los themes en `static/css/themes/` y define el boton de modo claro/oscuro.
-  - Define bloques `extra_css`, `content`, `extra_js`.
+  - Carga Bootstrap, tipografia, themes y `static/css/base.css`.
+  - Incluye boton de modo claro/oscuro.
 - `templates/index.html`
-  - Hereda de `base.html`.
+  - Home publica.
   - Carga `static/css/index.css` y `static/js/index.js`.
 - `templates/login.html`
-  - Hereda de `index.html`.
-  - Reutiliza el layout del home.
+  - Login con mensajes de error y toggle de password.
+- `templates/servicios.html`
+  - Listado publico de empresas con filtro por rubro.
+- `templates/servicios_turno.html`
+  - Seleccion de horario y formulario de solicitud de turno (mock).
 - `templates/dashboard/base.html`
-  - Hereda de `base.html`.
+  - Layout del dashboard.
+  - Sidebar con estado activo dinamico segun ruta.
   - Carga `static/css/dashboard.css` y `static/js/dashboard.js`.
-  - Define bloque `dashboard_content` para vistas internas.
-- `templates/dashboard/index.html`
-  - Hereda de `dashboard/base.html`.
-
-**Regla de `load static`**
-- Todos los templates que usen `{% static %}` deben declarar `{% load static %}` al inicio.
+- `templates/dashboard/seleccionar_empresa.html`
+  - Selector para usuarios con mas de una empresa.
+- `templates/dashboard/admin/empresa*.html`
+  - CRUD operativo de empresa, usuarios, suscripcion y pagos.
+- `templates/dashboard/admin/complemento*.html`
+  - Carga de catalogos base (rubros, geo, planes, servicios base).
+- `templates/dashboard/admin/contabilidad.html`
+  - Metricas financieras y filtros por anio/mes/rubro.
 
 **Orden de assets**
 1. Bootstrap CSS.
@@ -42,13 +51,17 @@ base.html
 7. `static/js/base.js`.
 8. JS especifico (`index.js`, `dashboard.js`).
 
-**Modo claro/oscuro**
-- Se controla con el atributo `data-theme` en `<html>`.
-- `static/js/base.js` persiste el modo en `localStorage` con la clave `gt-theme`.
-- El cambio de modo no recarga la pagina, por lo que los formularios no pierden su estado.
+**Comportamientos relevantes de frontend**
+- Theme persistente via `localStorage` (`gt-theme`).
+- Filtros dinamicos en:
+  - Complementos (provincias/localidades/servicios base).
+  - Empresas (busqueda y estado).
+  - Servicios publicos (rubro).
+- Dependencias geograficas en formularios de empresa:
+  - Pais -> Provincia -> Localidad.
+- Tooltips en contabilidad para aclarar reglas de corte temporal.
 
 **Rutas relacionadas**
-- `/` -> `index.html`
-- `/login/` -> `login.html`
-- `/dashboard/` -> `dashboard/index.html`
-- `/logout/` -> POST de cierre de sesion
+- Publico: `/`, `/servicios/`, `/servicios/turno/<slug>/`, `/login/`.
+- Dashboard usuario: `/dashboard/`, `/dashboard/empresa/<id>/`.
+- Dashboard admin: `/dashboard/admin/`, `/dashboard/admin/empresa/`, `/dashboard/admin/complementos/`, `/dashboard/admin/contabilidad/`.

@@ -1,0 +1,203 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-welcome">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <div>
+      <h1 class="h3 mb-1">Editar empresa</h1>
+      <p class="text-muted mb-0">{{ empresa.nombre }}</p>
+    </div>
+    <a href="{% url 'dashboard_admin_empresa' %}" class="btn btn-outline-light btn-sm">Volver</a>
+  </div>
+
+  {% if messages %}
+    <div class="d-flex flex-column gap-2 mb-3">
+      {% for message in messages %}
+        <div class="alert alert-success mb-0" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="welcome-card">
+        <h2 class="h6 mb-3">Datos de la empresa</h2>
+        {% if empresa_form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ empresa_form.non_field_errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="d-flex flex-column gap-3" data-geo-form>
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="empresa">
+          <div class="row g-3">
+            {% for field in empresa_form %}
+              <div class="col-md-4">
+                {% if field.name == "pais" %}
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" {% if field.field.required %}required{% endif %}>
+                    {% for pais in paises %}
+                      <option value="{{ pais.id }}" data-code="{{ pais.codigo }}" {% if field.value|stringformat:"s" == pais.id|stringformat:"s" %}selected{% endif %}>{{ pais.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                {% elif field.name == "provincia" %}
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" data-provincia-select {% if field.field.required %}required{% endif %}>
+                    <option value="">Selecciona una provincia</option>
+                    {% for provincia in provincias %}
+                      <option value="{{ provincia.id }}" data-pais-id="{{ provincia.pais_id }}" {% if field.value|stringformat:"s" == provincia.id|stringformat:"s" %}selected{% endif %}>{{ provincia.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                {% elif field.name == "localidad" %}
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" data-localidad-select {% if field.field.required %}required{% endif %}>
+                    <option value="">Selecciona una localidad</option>
+                    {% for localidad in localidades %}
+                      <option value="{{ localidad.id }}" data-provincia-id="{{ localidad.provincia_id }}" {% if field.value|stringformat:"s" == localidad.id|stringformat:"s" %}selected{% endif %}>{{ localidad.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                {% elif field.field.widget.input_type == "checkbox" %}
+                  <div class="form-check mt-4">
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  </div>
+                {% else %}
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary align-self-start">Guardar cambios</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="welcome-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h6 mb-0">Suscripcion</h2>
+          <a class="btn btn-outline-light btn-sm" href="{% url 'dashboard_admin_empresa_suscripcion_editar' empresa.id %}">Editar</a>
+        </div>
+        {% if suscripcion %}
+          <div class="row g-3">
+            <div class="col-md-4">
+              <p class="text-muted mb-1">Plan</p>
+              <strong>{{ suscripcion.plan }}</strong>
+              <div class="small text-muted mt-1">
+                {% if suscripcion.plan.limite_simultaneo %}
+                  Hasta {{ suscripcion.plan.limite_simultaneo }} turnos simultaneos
+                {% else %}
+                  Turnos simultaneos ilimitados
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <p class="text-muted mb-1">Periodicidad</p>
+              <strong>{{ suscripcion.get_periodicidad_display }}</strong>
+            </div>
+            <div class="col-md-4">
+              <p class="text-muted mb-1">Estado</p>
+              {% if suscripcion.activa %}
+                <span class="badge bg-success">Activa</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactiva</span>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted mb-1">Vigencia</p>
+              <strong>{{ suscripcion.fecha_inicio }} - {% if suscripcion.fecha_vencimiento %}{{ suscripcion.fecha_vencimiento }}{% else %}Sin vencimiento{% endif %}</strong>
+            </div>
+            <div class="col-md-3">
+              <p class="text-muted mb-1">Precio mensual</p>
+              <strong>${{ suscripcion.plan.precio_mensual }}</strong>
+            </div>
+            <div class="col-md-3">
+              <p class="text-muted mb-1">Precio anual</p>
+              <strong>${{ suscripcion.plan.precio_anual }}</strong>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">Todavia no hay suscripciones registradas.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="welcome-card">
+        <h2 class="h6 mb-3">Pagos</h2>
+        <div class="row g-3">
+          <div class="col-lg-7">
+            <div class="complemento-list">
+              {% for pago in pagos %}
+                <div class="complemento-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ pago.fecha_pago }}</strong>
+                    <div class="text-muted small">{{ pago.get_periodo_display }} · {{ pago.suscripcion.plan }}</div>
+                  </div>
+                  <span class="badge bg-primary">${{ pago.monto }}</span>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0">Todavia no hay pagos registrados.</p>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-lg-5">
+            {% if suscripcion %}
+              <p class="text-muted mb-2">Suscripcion actual: <strong>{{ suscripcion.plan }}</strong></p>
+              <p class="text-muted mb-2">Periodicidad: <strong>{{ suscripcion.get_periodicidad_display }}</strong></p>
+              <p class="text-muted mb-2">Monto a cobrar: <strong>${{ monto_a_cobrar }}</strong></p>
+              <p class="text-muted mb-2">Fecha de pago: <strong>hoy</strong></p>
+              <form method="post" class="d-flex flex-column gap-3">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="pago">
+                {% if pago_form.non_field_errors %}
+                  <div class="alert alert-danger mb-0" role="alert">
+                    {{ pago_form.non_field_errors }}
+                  </div>
+                {% endif %}
+                <button type="submit" class="btn btn-outline-light">Registrar pago</button>
+              </form>
+            {% else %}
+              <p class="text-muted mb-0">No hay suscripcion activa para registrar pagos.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="welcome-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h6 mb-0">Usuarios de la empresa</h2>
+          <a class="btn btn-outline-light btn-sm" href="{% url 'dashboard_admin_empresa_usuario_nuevo' empresa.id %}">Agregar usuario</a>
+        </div>
+        <div class="complemento-list">
+          {% for usuario_empresa in usuarios %}
+            <div class="complemento-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ usuario_empresa.usuario.nombre }} {{ usuario_empresa.usuario.apellido }}</strong>
+                <div class="text-muted small">{{ usuario_empresa.usuario.email }}</div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary text-uppercase">{{ usuario_empresa.get_rol_display }}</span>
+                <a class="btn btn-outline-light btn-sm" href="{% url 'dashboard_admin_empresa_usuario_editar' empresa.id usuario_empresa.usuario.id %}">Editar</a>
+                <form method="post" action="{% url 'dashboard_admin_empresa_usuario_eliminar' empresa.id usuario_empresa.usuario.id %}" class="m-0" onsubmit="return confirm('Eliminar este usuario?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-light btn-sm">Eliminar</button>
+                </form>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0">Todavia no hay usuarios asociados.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-welcome">
+  <h1 class="h3 mb-3">Contabilidad</h1>
+
+  <div class="welcome-card mb-4">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label" for="filter-year">Ano</label>
+        <select id="filter-year" name="year" class="form-select">
+          <option value="">Todos</option>
+          {% for y in years %}
+            <option value="{{ y|date:'Y' }}" {% if filter_year == y|date:'Y' %}selected{% endif %}>{{ y|date:'Y' }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label" for="filter-month">Mes</label>
+        <select id="filter-month" name="month" class="form-select">
+          <option value="">Todos</option>
+          <option value="1" {% if filter_month == '1' %}selected{% endif %}>Enero</option>
+          <option value="2" {% if filter_month == '2' %}selected{% endif %}>Febrero</option>
+          <option value="3" {% if filter_month == '3' %}selected{% endif %}>Marzo</option>
+          <option value="4" {% if filter_month == '4' %}selected{% endif %}>Abril</option>
+          <option value="5" {% if filter_month == '5' %}selected{% endif %}>Mayo</option>
+          <option value="6" {% if filter_month == '6' %}selected{% endif %}>Junio</option>
+          <option value="7" {% if filter_month == '7' %}selected{% endif %}>Julio</option>
+          <option value="8" {% if filter_month == '8' %}selected{% endif %}>Agosto</option>
+          <option value="9" {% if filter_month == '9' %}selected{% endif %}>Septiembre</option>
+          <option value="10" {% if filter_month == '10' %}selected{% endif %}>Octubre</option>
+          <option value="11" {% if filter_month == '11' %}selected{% endif %}>Noviembre</option>
+          <option value="12" {% if filter_month == '12' %}selected{% endif %}>Diciembre</option>
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label" for="filter-rubro">Rubro</label>
+        <select id="filter-rubro" name="rubro" class="form-select">
+          <option value="">Todos</option>
+          {% for rubro in rubros %}
+            <option value="{{ rubro.id }}" {% if filter_rubro == rubro.id|stringformat:'s' %}selected{% endif %}>{{ rubro.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-12 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-light">Aplicar filtros</button>
+        <a href="{% url 'dashboard_admin_contabilidad' %}" class="btn btn-outline-light">Limpiar</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Ingresos historicos</p>
+        <h2 class="h4 mb-0">${{ ingresos_total }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Ingresos del mes</p>
+        <h2 class="h4 mb-0">${{ ingresos_mes }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Ultimos 30 dias</p>
+        <h2 class="h4 mb-0">${{ ingresos_30 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Cantidad de pagos</p>
+        <h2 class="h4 mb-0">{{ pagos_count }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Ticket promedio</p>
+        <h2 class="h4 mb-0">${{ ticket_promedio|floatformat:2 }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Empresas totales</p>
+        <h2 class="h4 mb-0">{{ empresas_total }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Empresas al dia</p>
+        <h2 class="h4 mb-0">{{ empresas_al_dia }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">Empresas vencidas</p>
+        <h2 class="h4 mb-0">{{ empresas_vencidas }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card">
+        <p class="text-muted mb-1">
+          Por vencer (7 dias)
+          <span
+            class="ms-1"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Cuenta empresas cuyo vencimiento cae entre la fecha de corte y los 7 dias siguientes. Con filtros de anio/mes, se usa el cierre del periodo como corte."
+          >
+            ?
+          </span>
+        </p>
+        <h2 class="h4 mb-0">{{ empresas_por_vencer }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-muted small mb-4">Estado financiero calculado al corte: <strong>{{ estado_corte }}</strong>.</p>
+
+  <div class="welcome-card">
+    <h2 class="h6 mb-3">Ingresos por mes (ultimos 6 meses)</h2>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in monthly %}
+            <tr>
+              <td>{{ item.label }}</td>
+              <td>${{ item.total|floatformat:2 }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="2" class="text-muted">Sin datos disponibles.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

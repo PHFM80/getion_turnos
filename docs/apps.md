@@ -22,8 +22,9 @@
 - `Turno` con estado, cliente, servicio y empleado.
 
 **suscripciones**
-- `Plan` y `Suscripcion` por empresa.
-- `Pago` con periodo mensual o anual.
+- `Plan` con limite de turnos simultaneos y precios mensual/anual.
+- `Suscripcion` por empresa con periodicidad mensual/anual.
+- `Pago` historico (fecha actual, monto y periodo aplicado).
 
 **comunicaciones**
 - `Conversacion` empresa-usuario.

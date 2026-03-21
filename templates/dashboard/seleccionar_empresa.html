@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion Turnos | Seleccionar Empresa{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "css/dashboard.css" %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+  <div class="container py-5">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Hola {{ welcome_name }}</h1>
+        <p class="text-muted mb-0">Selecciona la empresa con la que queres trabajar.</p>
+      </div>
+      <span class="badge bg-secondary">{{ role_label }}</span>
+    </div>
+
+    <div class="row g-3">
+      {% for card in empresas_cards %}
+        <div class="col-sm-6 col-lg-4">
+          <div class="empresa-card">
+            <div class="empresa-card-header">
+              <h2 class="h6 mb-1">{{ card.usuario_empresa.empresa.nombre }}</h2>
+              {% if card.enabled %}
+                <span class="badge bg-success">Activa</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactiva</span>
+              {% endif %}
+            </div>
+            <p class="text-muted mb-1">{{ card.usuario_empresa.empresa.telefono }}</p>
+            <p class="text-muted mb-3">Vencimiento: {% if card.vencimiento %}{{ card.vencimiento }}{% else %}Sin vencimiento{% endif %}</p>
+            {% if card.enabled %}
+              <a class="btn btn-primary btn-sm w-100" href="{% url 'dashboard_select_empresa' card.usuario_empresa.empresa.id %}">Ingresar</a>
+            {% else %}
+              <button class="btn btn-outline-light btn-sm w-100" type="button" disabled>Empresa inactiva</button>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

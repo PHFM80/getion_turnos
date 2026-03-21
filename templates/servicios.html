@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion Turnos | Servicios{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "css/index.css" %}">
+{% endblock %}
+
+{% block content %}
+<section class="servicios-hero">
+  <div class="container py-5">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+      <div>
+        <p class="eyebrow">Encuentra tu empresa</p>
+        <h1 class="display-5 fw-semibold">Empresas disponibles para pedir turno</h1>
+        <p class="lead text-muted">Filtra por rubro y solicita tu turno directo desde la web.</p>
+      </div>
+      <div class="servicios-filter">
+        <label for="rubro-filter" class="form-label">Filtrar por rubro</label>
+        <select id="rubro-filter" class="form-select" data-rubro-filter>
+          <option value="all">Todos</option>
+          {% for rubro in rubros %}
+            <option value="{{ rubro|lower }}">{{ rubro }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="servicios-list">
+  <div class="container pb-5">
+    <div class="row g-3" data-rubro-list>
+      {% for empresa in empresas %}
+        <div class="col-sm-6 col-lg-4" data-rubro-card data-rubro="{{ empresa.rubro|lower }}">
+          <div class="empresa-public-card">
+            <div class="empresa-public-header">
+              <h2 class="h6 mb-1">{{ empresa.nombre }}</h2>
+              <span class="badge bg-success">{{ empresa.estado }}</span>
+            </div>
+            <p class="text-muted mb-3">{{ empresa.rubro }} · {{ empresa.ubicacion }}</p>
+            <a class="btn btn-primary btn-sm w-100" href="{% url 'servicios_turno' empresa.slug %}">Pedir turno</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static "js/index.js" %}"></script>
+{% endblock %}

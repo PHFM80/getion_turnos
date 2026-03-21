@@ -21,9 +21,10 @@ python manage.py runserver
 
 **Documentacion**
 - `docs/overview.md` - Panorama funcional y entidades principales.
-- `docs/setup.md` - Configuracion local y variables de entorno.
+- `docs/setup.md` - Configuracion local, variables de entorno y scheduler.
 - `docs/apps.md` - Detalle por aplicacion y modelos clave.
 - `docs/seed.md` - Datos base y comando de carga.
 - `docs/arquitectura.md` - Arquitectura actual y relaciones entre apps.
 - `docs/templates.md` - Vistas, herencia y orden de assets.
 - `docs/themes.md` - Sistema de modo claro/oscuro y variables CSS.
+- `docs/dashboard_admin.md` - Flujos del panel admin (empresa, usuarios, suscripciones, pagos, contabilidad).

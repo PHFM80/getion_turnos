@@ -13,6 +13,7 @@ class Empresa(models.Model):
     telefono = models.CharField(max_length=30, unique=True)
     calle = models.CharField(max_length=200)
     numero = models.CharField(max_length=20)
+    activo = models.BooleanField(default=True)
     pais = models.ForeignKey(
         'geo.Pais',
         on_delete=models.PROTECT,

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion Turnos | Solicitar Turno{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "css/index.css" %}">
+{% endblock %}
+
+{% block content %}
+<section class="turno-hero">
+  <div class="container py-5">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+      <div>
+        <p class="eyebrow">Solicitar turno</p>
+        <h1 class="display-5 fw-semibold">{{ empresa.nombre }}</h1>
+        <p class="lead text-muted">{{ empresa.rubro }} · Selecciona un horario disponible y completa tus datos.</p>
+      </div>
+      <a href="{% url 'servicios_publicos' %}" class="btn btn-outline-light btn-sm">Volver</a>
+    </div>
+  </div>
+</section>
+
+<section class="turno-content">
+  <div class="container pb-5">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="welcome-card">
+          <h2 class="h6 mb-3">Horarios disponibles</h2>
+          <div class="turno-list" data-turno-list>
+            {% for turno in horarios %}
+              <button type="button" class="turno-slot" data-turno-slot data-fecha="{{ turno.fecha }}" data-hora="{{ turno.hora }}">
+                <span>{{ turno.fecha }}</span>
+                <strong>{{ turno.hora }}</strong>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="welcome-card">
+          <h2 class="h6 mb-3">Datos del turno</h2>
+          <form class="d-flex flex-column gap-3" data-turno-form>
+            <input type="hidden" name="fecha" id="turno-fecha">
+            <input type="hidden" name="hora" id="turno-hora">
+            <div>
+              <label class="form-label" for="nombre">Nombre</label>
+              <input class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div>
+              <label class="form-label" for="apellido">Apellido</label>
+              <input class="form-control" id="apellido" name="apellido" required>
+            </div>
+            <div>
+              <label class="form-label" for="dni">DNI</label>
+              <input class="form-control" id="dni" name="dni" inputmode="numeric" pattern="\d+" required>
+            </div>
+            <div>
+              <label class="form-label" for="telefono">Telefono</label>
+              <input class="form-control" id="telefono" name="telefono" inputmode="numeric" pattern="\d+" required>
+            </div>
+            <div>
+              <label class="form-label" for="correo">Correo</label>
+              <input class="form-control" id="correo" name="correo" type="email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Solicitar turno</button>
+            <p class="text-muted mb-0" data-turno-message></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static "js/index.js" %}"></script>
+{% endblock %}

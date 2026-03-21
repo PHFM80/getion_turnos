@@ -37,7 +37,7 @@
 }
 
 .dashboard-welcome {
-  max-width: 720px;
+  width: 100%;
 }
 
 .complemento-card {
@@ -68,6 +68,29 @@
   border-radius: 12px;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
+}
+
+.empresa-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--app-card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empresa-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.empresa-card-actions {
+  display: flex;
+  gap: 8px;
 }
 
 @media (max-width: 991px) {

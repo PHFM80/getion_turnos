@@ -3,10 +3,89 @@
 
 {% block dashboard_content %}
 <div class="dashboard-welcome">
-  <h1 class="h3 mb-2">Cargar Empresa</h1>
-  <p class="text-muted mb-4">Formulario de alta de empresas (pendiente).</p>
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <div>
+      <h1 class="h3 mb-1">Cargar empresa</h1>
+      <p class="text-muted mb-0">Completa los datos para dar de alta una empresa.</p>
+    </div>
+    <a href="{% url 'dashboard_admin_empresa' %}" class="btn btn-outline-light btn-sm">Volver</a>
+  </div>
+
+  {% if messages %}
+    <div class="d-flex flex-column gap-2 mb-3">
+      {% for message in messages %}
+        <div class="alert alert-success mb-0" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <div class="welcome-card">
-    <p class="mb-0">Esta vista sera usada para crear nuevas empresas.</p>
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    <form method="post" class="d-flex flex-column gap-3" data-geo-form>
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.name == "pais" %}
+          <div>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" {% if field.field.required %}required{% endif %}>
+              {% for pais in paises %}
+                <option value="{{ pais.id }}" data-code="{{ pais.codigo }}" {% if field.value|stringformat:"s" == pais.id|stringformat:"s" %}selected{% endif %}>{{ pais.nombre }}</option>
+              {% endfor %}
+            </select>
+            {% for error in field.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% elif field.name == "provincia" %}
+          <div>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" data-provincia-select {% if field.field.required %}required{% endif %}>
+              <option value="">Selecciona una provincia</option>
+              {% for provincia in provincias %}
+                <option value="{{ provincia.id }}" data-pais-id="{{ provincia.pais_id }}" {% if field.value|stringformat:"s" == provincia.id|stringformat:"s" %}selected{% endif %}>{{ provincia.nombre }}</option>
+              {% endfor %}
+            </select>
+            {% for error in field.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% elif field.name == "localidad" %}
+          <div>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select" data-localidad-select {% if field.field.required %}required{% endif %}>
+              <option value="">Selecciona una localidad</option>
+              {% for localidad in localidades %}
+                <option value="{{ localidad.id }}" data-provincia-id="{{ localidad.provincia_id }}" {% if field.value|stringformat:"s" == localidad.id|stringformat:"s" %}selected{% endif %}>{{ localidad.nombre }}</option>
+              {% endfor %}
+            </select>
+            {% for error in field.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% elif field.field.widget.input_type == "checkbox" %}
+          <div class="form-check">
+            {{ field }}
+            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          </div>
+          {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        {% else %}
+          <div>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Crear empresa</button>
+    </form>
   </div>
 </div>
 {% endblock %}

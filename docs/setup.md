@@ -34,3 +34,19 @@ python manage.py runserver
 **Notas de base de datos**
 - En desarrollo se usa SQLite en `db.sqlite3`.
 - En produccion se valida que existan variables de Postgres antes de iniciar.
+
+**Sincronizacion de suscripciones (2 veces por dia)**
+- Comando manual:
+```powershell
+python manage.py sync_suscripciones
+```
+- Comando silencioso (para scheduler):
+```powershell
+python manage.py sync_suscripciones --quiet
+```
+
+- En Windows Task Scheduler, crear 2 tareas diarias (por ejemplo `08:00` y `20:00`) con:
+```powershell
+Program/script: powershell.exe
+Arguments: -NoProfile -ExecutionPolicy Bypass -Command "cd D:\proyectos\gestion_turnos; .\venv\Scripts\Activate.ps1; python manage.py sync_suscripciones --quiet"
+```
