@@ -2,11 +2,13 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import timedelta
 
 from empresas.models import Empresa, Rubro
 from geo.models import Localidad, Pais, Provincia
-from servicios.models import ServicioBase
+from servicios.models import ServicioBase, ServicioEmpresa
 from suscripciones.models import Pago, Plan, Suscripcion
+from agenda.models import CapacidadEmpresa, HorarioEmpresa, BloqueoEmpresa
 
 
 def apply_bootstrap_styles(form):
@@ -154,6 +156,111 @@ class ServicioBaseForm(forms.ModelForm):
             existe = ServicioBase.objects.filter(nombre__iexact=nombre.strip(), rubro=rubro)
             if existe.exists():
                 self.add_error("nombre", "Ya existe un servicio base con ese nombre para el rubro seleccionado.")
+        return cleaned_data
+
+
+class ServicioEmpresaForm(forms.ModelForm):
+    duracion_minutos = forms.IntegerField(min_value=1, max_value=1440, label="Duracion (minutos)")
+
+    class Meta:
+        model = ServicioEmpresa
+        fields = ["servicio_base", "duracion_minutos", "precio", "activo"]
+
+    def __init__(self, *args, **kwargs):
+        self.empresa = kwargs.pop("empresa", None)
+        super().__init__(*args, **kwargs)
+        if self.empresa:
+            self.fields["servicio_base"].queryset = ServicioBase.objects.filter(rubro=self.empresa.rubro).order_by("nombre")
+        self.fields["servicio_base"].empty_label = "Selecciona un servicio"
+        apply_bootstrap_styles(self)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        servicio_base = cleaned_data.get("servicio_base")
+
+        if not self.empresa:
+            raise ValidationError("No se pudo determinar la empresa para el servicio.")
+
+        if servicio_base:
+            existe = ServicioEmpresa.objects.filter(empresa=self.empresa, servicio_base=servicio_base)
+            if self.instance.pk:
+                existe = existe.exclude(pk=self.instance.pk)
+            if existe.exists():
+                self.add_error("servicio_base", "Ese servicio ya esta cargado para la empresa.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.empresa = self.empresa
+        minutos = self.cleaned_data.get("duracion_minutos")
+        instance.duracion = timedelta(minutes=minutos)
+        if commit:
+            instance.save()
+        return instance
+
+
+class CapacidadEmpresaForm(forms.ModelForm):
+    class Meta:
+        model = CapacidadEmpresa
+        fields = ["capacidad"]
+
+    def __init__(self, *args, **kwargs):
+        self.limite_plan = kwargs.pop("limite_plan", None)
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_styles(self)
+
+    def clean_capacidad(self):
+        capacidad = self.cleaned_data["capacidad"]
+        if capacidad < 1:
+            raise ValidationError("La capacidad debe ser al menos 1.")
+        if self.limite_plan and capacidad > self.limite_plan:
+            raise ValidationError(f"La capacidad no puede superar el limite del plan ({self.limite_plan}).")
+        return capacidad
+
+
+class HorarioEmpresaForm(forms.ModelForm):
+    class Meta:
+        model = HorarioEmpresa
+        fields = ["dia_semana", "hora_inicio", "hora_fin"]
+        widgets = {
+            "hora_inicio": forms.TimeInput(attrs={"type": "time"}),
+            "hora_fin": forms.TimeInput(attrs={"type": "time"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_styles(self)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        hora_inicio = cleaned_data.get("hora_inicio")
+        hora_fin = cleaned_data.get("hora_fin")
+        if hora_inicio and hora_fin and hora_fin <= hora_inicio:
+            self.add_error("hora_fin", "La hora de fin debe ser posterior a la hora de inicio.")
+        return cleaned_data
+
+
+class BloqueoEmpresaForm(forms.ModelForm):
+    class Meta:
+        model = BloqueoEmpresa
+        fields = ["fecha", "hora_inicio", "hora_fin", "motivo"]
+        widgets = {
+            "fecha": forms.DateInput(attrs={"type": "date"}),
+            "hora_inicio": forms.TimeInput(attrs={"type": "time"}),
+            "hora_fin": forms.TimeInput(attrs={"type": "time"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_styles(self)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        hora_inicio = cleaned_data.get("hora_inicio")
+        hora_fin = cleaned_data.get("hora_fin")
+        if hora_inicio and hora_fin and hora_fin <= hora_inicio:
+            self.add_error("hora_fin", "La hora de fin debe ser posterior a la hora de inicio.")
         return cleaned_data
 
 

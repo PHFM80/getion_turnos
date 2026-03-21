@@ -8,15 +8,18 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.db import transaction
 from django.utils import timezone
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from django.http import HttpResponse
 import base64
 from django.db.models import Count, Avg, Sum
 from django.views.decorators.http import require_POST
 
 from core.forms import (
+    BloqueoEmpresaForm,
+    CapacidadEmpresaForm,
     EmpresaCreateForm,
     EmpresaForm,
+    HorarioEmpresaForm,
     LocalidadForm,
     PaisForm,
     PagoForm,
@@ -24,6 +27,7 @@ from core.forms import (
     ProvinciaForm,
     RubroForm,
     ServicioBaseForm,
+    ServicioEmpresaForm,
     SuscripcionEditForm,
     SuscripcionForm,
     UsuarioEmpresaCreateForm,
@@ -33,8 +37,8 @@ from core.models import UsuarioEmpresa
 from empresas.models import Rubro
 from empresas.models import Empresa
 from geo.models import Localidad, Pais, Provincia
-from servicios.models import ServicioBase
-from agenda.models import Turno
+from servicios.models import ServicioBase, ServicioEmpresa
+from agenda.models import BloqueoEmpresa, CapacidadEmpresa, CapacidadPuesto, HorarioEmpresa, Turno
 from suscripciones.models import Pago, Plan, Suscripcion
 
 
@@ -430,6 +434,18 @@ def admin_empresa_editar(request, empresa_id):
     pago_form = PagoForm(suscripcion=suscripcion_actual)
     monto_a_cobrar = monto_por_suscripcion(suscripcion_actual)
 
+    limite_plan = None
+    if suscripcion_actual and suscripcion_actual.plan:
+        limite_plan = suscripcion_actual.plan.limite_simultaneo
+
+    capacidad_actual = CapacidadEmpresa.objects.filter(empresa=empresa).first()
+    if capacidad_actual:
+        sync_capacidad_puestos(capacidad_actual)
+    servicio_form = ServicioEmpresaForm(empresa=empresa)
+    capacidad_form = CapacidadEmpresaForm(instance=capacidad_actual, limite_plan=limite_plan)
+    horario_form = HorarioEmpresaForm()
+    bloqueo_form = BloqueoEmpresaForm()
+
     if request.method == "POST":
         form_type = request.POST.get("form_type")
         if form_type == "empresa":
@@ -450,8 +466,89 @@ def admin_empresa_editar(request, empresa_id):
                 actualizar_vencimiento_por_pago(suscripcion_actual, pago)
                 messages.success(request, "Pago registrado y suscripcion actualizada.")
                 return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "servicio_empresa":
+            servicio_form = ServicioEmpresaForm(request.POST, empresa=empresa)
+            if servicio_form.is_valid():
+                servicio_form.save()
+                messages.success(request, "Servicio agregado a la empresa.")
+                return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "servicio_empresa_eliminar":
+            servicio_id = request.POST.get("servicio_empresa_id")
+            servicio = ServicioEmpresa.objects.filter(pk=servicio_id, empresa=empresa).first()
+            if not servicio:
+                messages.error(request, "No se encontro el servicio seleccionado.")
+            else:
+                servicio.delete()
+                messages.success(request, "Servicio eliminado de la empresa.")
+            return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "capacidad":
+            capacidad_form = CapacidadEmpresaForm(request.POST, instance=capacidad_actual, limite_plan=limite_plan)
+            if capacidad_form.is_valid():
+                capacidad = capacidad_form.save(commit=False)
+                capacidad.empresa = empresa
+                capacidad.save()
+                sync_capacidad_puestos(capacidad)
+                messages.success(request, "Capacidad de la empresa actualizada.")
+                return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "capacidad_nombres":
+            if not capacidad_actual:
+                messages.error(request, "Primero debes definir la capacidad de la empresa.")
+                return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
 
+            puestos = list(capacidad_actual.puestos.order_by("orden"))
+            nombres = request.POST.getlist("puestos_nombres")
+            for idx, puesto in enumerate(puestos):
+                nombre = ""
+                if idx < len(nombres):
+                    nombre = (nombres[idx] or "").strip()
+                puesto.nombre = nombre or None
+                puesto.save(update_fields=["nombre"])
+
+            messages.success(request, "Nombres de capacidad actualizados.")
+            return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "horario":
+            horario_form = HorarioEmpresaForm(request.POST)
+            if horario_form.is_valid():
+                horario = horario_form.save(commit=False)
+                horario.empresa = empresa
+                horario.save()
+                messages.success(request, "Horario agregado correctamente.")
+                return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "horario_eliminar":
+            horario_id = request.POST.get("horario_id")
+            horario = HorarioEmpresa.objects.filter(pk=horario_id, empresa=empresa).first()
+            if not horario:
+                messages.error(request, "No se encontro el horario seleccionado.")
+            else:
+                horario.delete()
+                messages.success(request, "Horario eliminado correctamente.")
+            return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "bloqueo":
+            bloqueo_form = BloqueoEmpresaForm(request.POST)
+            if bloqueo_form.is_valid():
+                bloqueo = bloqueo_form.save(commit=False)
+                bloqueo.empresa = empresa
+                bloqueo.save()
+                messages.success(request, "Bloqueo registrado correctamente.")
+                return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+        elif form_type == "bloqueo_eliminar":
+            bloqueo_id = request.POST.get("bloqueo_id")
+            bloqueo = BloqueoEmpresa.objects.filter(pk=bloqueo_id, empresa=empresa).first()
+            if not bloqueo:
+                messages.error(request, "No se encontro el bloqueo seleccionado.")
+            else:
+                bloqueo.delete()
+                messages.success(request, "Bloqueo eliminado correctamente.")
+            return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
+
+    servicios_empresa = ServicioEmpresa.objects.filter(empresa=empresa).select_related("servicio_base").order_by("servicio_base__nombre")
+    horarios = HorarioEmpresa.objects.filter(empresa=empresa).order_by("dia_semana", "hora_inicio")
+    bloqueos = BloqueoEmpresa.objects.filter(empresa=empresa).order_by("-fecha", "hora_inicio")
+    puestos_capacidad = []
+    if capacidad_actual:
+        puestos_capacidad = list(capacidad_actual.puestos.order_by("orden"))
     usuarios = UsuarioEmpresa.objects.filter(empresa=empresa).select_related("usuario").order_by("usuario__nombre")
+
     return render(
         request,
         "dashboard/admin/empresa_editar.html",
@@ -462,6 +559,16 @@ def admin_empresa_editar(request, empresa_id):
             "pagos": pagos,
             "pago_form": pago_form,
             "monto_a_cobrar": monto_a_cobrar,
+            "servicios_empresa": servicios_empresa,
+            "servicio_form": servicio_form,
+            "capacidad": capacidad_actual,
+            "capacidad_form": capacidad_form,
+            "puestos_capacidad": puestos_capacidad,
+            "limite_plan": limite_plan,
+            "horarios": horarios,
+            "horario_form": horario_form,
+            "bloqueos": bloqueos,
+            "bloqueo_form": bloqueo_form,
             "usuarios": usuarios,
             "paises": Pais.objects.order_by("nombre"),
             "provincias": Provincia.objects.select_related("pais").order_by("nombre"),
@@ -469,6 +576,20 @@ def admin_empresa_editar(request, empresa_id):
             **admin_context(request.user),
         },
     )
+
+
+def sync_capacidad_puestos(capacidad):
+    existentes = {puesto.orden: puesto for puesto in capacidad.puestos.all()}
+
+    for orden in range(1, capacidad.capacidad + 1):
+        if orden not in existentes:
+            CapacidadPuesto.objects.create(
+                capacidad=capacidad,
+                orden=orden,
+                nombre=None,
+            )
+
+    capacidad.puestos.filter(orden__gt=capacidad.capacidad).delete()
 
 
 def add_months(base_date, months):
@@ -497,6 +618,13 @@ def sync_estado_suscripcion(suscripcion, today=None):
     if suscripcion.fecha_vencimiento and suscripcion.fecha_vencimiento < today and suscripcion.activa:
         suscripcion.activa = False
         suscripcion.save(update_fields=["activa"])
+        BloqueoEmpresa.objects.get_or_create(
+            empresa=suscripcion.empresa,
+            fecha=today,
+            hora_inicio=time(0, 0),
+            hora_fin=time(23, 59),
+            motivo="Bloqueo automatico por falta de pago",
+        )
     return suscripcion
 
 

@@ -8,10 +8,34 @@ class CapacidadEmpresa(models.Model):
         on_delete=models.CASCADE,
         related_name='capacidad',
     )
+    nombre = models.CharField(max_length=150, blank=True, null=True)
     capacidad = models.PositiveIntegerField()
 
     def __str__(self):
         return f'{self.empresa} - {self.capacidad}'
+
+
+class CapacidadPuesto(models.Model):
+    capacidad = models.ForeignKey(
+        CapacidadEmpresa,
+        on_delete=models.CASCADE,
+        related_name='puestos',
+    )
+    orden = models.PositiveSmallIntegerField()
+    nombre = models.CharField(max_length=150, blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['capacidad', 'orden'],
+                name='unique_puesto_por_capacidad_orden',
+            ),
+        ]
+        ordering = ['orden']
+
+    def __str__(self):
+        nombre = self.nombre or "Sin nombre"
+        return f'{self.capacidad.empresa} - Puesto {self.orden} - {nombre}'
 
 
 class HorarioEmpresa(models.Model):
