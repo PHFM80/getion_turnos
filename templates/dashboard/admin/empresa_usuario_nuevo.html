@@ -13,6 +13,15 @@
 
   <div class="welcome-card">
     <p class="text-muted">La clave inicial sera <strong>gestorturnos2026</strong>.</p>
+    <p class="text-muted">
+      Si el email ya existe en el sistema, se vinculara ese usuario a esta empresa.
+    </p>
+    {% if confirmar_vinculacion and usuario_existente %}
+      <div class="alert alert-warning" role="alert">
+        El usuario <strong>{{ usuario_existente.email }}</strong> ya existe en el sistema.
+        ¿Confirmas vincularlo a esta empresa como <strong>{{ rol_label }}</strong>?
+      </div>
+    {% endif %}
     {% if form.non_field_errors %}
       <div class="alert alert-danger" role="alert">
         {{ form.non_field_errors }}
@@ -29,7 +38,19 @@
           {% endfor %}
         </div>
       {% endfor %}
-      <button type="submit" class="btn btn-primary">Crear usuario</button>
+      {% if confirmar_vinculacion and usuario_existente %}
+        <input type="hidden" name="confirmar_vinculacion" value="1">
+        <div class="d-flex gap-2">
+          <button type="submit" name="action" value="confirm_link" class="btn btn-warning">
+            Aceptar y vincular
+          </button>
+          <button type="submit" name="action" value="cancel_link" class="btn btn-outline-light">
+            Cancelar
+          </button>
+        </div>
+      {% else %}
+        <button type="submit" class="btn btn-primary">Crear o vincular usuario</button>
+      {% endif %}
     </form>
   </div>
 </div>

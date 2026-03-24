@@ -11,7 +11,7 @@ from django.utils import timezone
 from datetime import date, time, timedelta
 from django.http import HttpResponse
 import base64
-from django.db.models import Count, Avg, Sum
+from django.db.models import Count, Avg, Sum, Q
 from django.views.decorators.http import require_POST
 
 from core.forms import (
@@ -273,9 +273,59 @@ def admin_empresas_nueva(request):
 
 @login_required
 def admin_usuarios_nuevo(request):
-    if not (request.user.is_staff or request.user.is_superuser):
-        raise PermissionDenied
-    return render(request, 'dashboard/admin/usuario_nuevo.html', admin_context(request.user))
+    require_admin(request.user)
+    query = request.GET.get("q", "").strip()
+    empresa_id = request.GET.get("empresa", "").strip()
+    rol = request.GET.get("rol", "").strip()
+    orden = request.GET.get("orden", "asc").strip().lower()
+    if orden not in ("asc", "desc"):
+        orden = "asc"
+
+    usuarios_qs = UsuarioEmpresa.objects.select_related("usuario", "empresa")
+
+    if query:
+        usuarios_qs = usuarios_qs.filter(
+            Q(usuario__nombre__icontains=query)
+            | Q(usuario__apellido__icontains=query)
+            | Q(usuario__email__icontains=query)
+            | Q(empresa__nombre__icontains=query)
+        )
+
+    if empresa_id.isdigit():
+        usuarios_qs = usuarios_qs.filter(empresa_id=int(empresa_id))
+
+    if rol in (UsuarioEmpresa.ROL_DUENO, UsuarioEmpresa.ROL_EMPLEADO):
+        usuarios_qs = usuarios_qs.filter(rol=rol)
+
+    order_fields = ["usuario__nombre", "usuario__apellido", "usuario__email", "empresa__nombre"]
+    if orden == "desc":
+        order_fields = [f"-{field}" for field in order_fields]
+    usuarios_qs = usuarios_qs.order_by(*order_fields)
+
+    # Una sola card por usuario: si tiene varias relaciones, se toma la primera
+    # segun el orden aplicado y filtros activos.
+    usuarios_unicos = []
+    seen_user_ids = set()
+    for usuario_empresa in usuarios_qs:
+        if usuario_empresa.usuario_id in seen_user_ids:
+            continue
+        seen_user_ids.add(usuario_empresa.usuario_id)
+        usuarios_unicos.append(usuario_empresa)
+
+    empresas = Empresa.objects.order_by("nombre")
+    return render(
+        request,
+        "dashboard/admin/usuario_nuevo.html",
+        {
+            "usuarios": usuarios_unicos,
+            "empresas": empresas,
+            "query": query,
+            "filter_empresa": empresa_id,
+            "filter_rol": rol,
+            "filter_orden": orden,
+            **admin_context(request.user),
+        },
+    )
 
 
 @login_required
@@ -751,56 +801,114 @@ def admin_empresa_suscripcion_editar(request, empresa_id):
 def admin_empresa_usuario_nuevo(request, empresa_id):
     require_admin(request.user)
     empresa = Empresa.objects.get(pk=empresa_id)
-    form = UsuarioEmpresaCreateForm()
+    form = UsuarioEmpresaCreateForm(empresa=empresa)
+    confirmar_vinculacion = False
+    usuario_existente = None
+    rol_label = None
+
     if request.method == "POST":
-        form = UsuarioEmpresaCreateForm(request.POST)
+        action = request.POST.get("action", "submit")
+        if action == "cancel_link":
+            messages.info(request, "Vinculacion cancelada.")
+            return redirect("dashboard_admin_empresa_usuario_nuevo", empresa_id=empresa.id)
+
+        form = UsuarioEmpresaCreateForm(request.POST, empresa=empresa)
         if form.is_valid():
             data = form.cleaned_data
+            confirmar_submit = request.POST.get("confirmar_vinculacion") == "1"
+            if form.existing_user and not confirmar_submit:
+                confirmar_vinculacion = True
+                usuario_existente = form.existing_user
+                rol_label = dict(form.fields["rol"].choices).get(data["rol"], data["rol"])
+                return render(
+                    request,
+                    "dashboard/admin/empresa_usuario_nuevo.html",
+                    {
+                        "empresa": empresa,
+                        "form": form,
+                        "confirmar_vinculacion": confirmar_vinculacion,
+                        "usuario_existente": usuario_existente,
+                        "rol_label": rol_label,
+                        **admin_context(request.user),
+                    },
+                )
+
             with transaction.atomic():
                 user_model = get_user_model()
-                password = "gestorturnos2026"
-                user = user_model.objects.create_user(
-                    email=data["email"],
-                    password=password,
-                    nombre=data["nombre"],
-                    apellido=data["apellido"],
-                    dni=data["dni"],
-                    telefono=data["telefono"],
-                )
-                UsuarioEmpresa.objects.create(
+                user = form.existing_user
+                usuario_nuevo = False
+                password = None
+
+                if not user:
+                    usuario_nuevo = True
+                    password = "gestorturnos2026"
+                    user = user_model.objects.create_user(
+                        email=data["email"],
+                        password=password,
+                        nombre=data["nombre"],
+                        apellido=data["apellido"],
+                        dni=data["dni"],
+                        telefono=data["telefono"],
+                    )
+
+                _, creado = UsuarioEmpresa.objects.get_or_create(
                     usuario=user,
                     empresa=empresa,
-                    rol=data["rol"],
-                    activo=True,
+                    defaults={
+                        "rol": data["rol"],
+                        "activo": True,
+                    },
                 )
-            pdf_bytes = build_usuario_pdf(
-                {
-                    "empresa": empresa.nombre,
-                    "nombre": f"{user.nombre} {user.apellido}",
-                    "email": user.email,
-                    "dni": user.dni,
-                    "telefono": user.telefono,
-                    "rol": data["rol"],
-                    "password": password,
-                }
-            )
-            pdf_base64 = base64.b64encode(pdf_bytes).decode("ascii")
-            return render(
+                if not creado:
+                    form.add_error("email", "Ese usuario ya esta asociado a esta empresa.")
+                    return render(
+                        request,
+                        "dashboard/admin/empresa_usuario_nuevo.html",
+                        {
+                            "empresa": empresa,
+                            "form": form,
+                            **admin_context(request.user),
+                        },
+                    )
+
+                if usuario_nuevo:
+                    pdf_bytes = build_usuario_pdf(
+                        {
+                            "empresa": empresa.nombre,
+                            "nombre": f"{user.nombre} {user.apellido}",
+                            "email": user.email,
+                            "dni": user.dni,
+                            "telefono": user.telefono,
+                            "rol": data["rol"],
+                            "password": password,
+                        }
+                    )
+                    pdf_base64 = base64.b64encode(pdf_bytes).decode("ascii")
+                    return render(
+                        request,
+                        "dashboard/admin/usuario_pdf_descarga.html",
+                        {
+                            "pdf_base64": pdf_base64,
+                            "filename": f"usuario_{user.id}.pdf",
+                            "redirect_url": f"/dashboard/admin/empresa/{empresa.id}/",
+                            **admin_context(request.user),
+                        },
+                    )
+
+            messages.success(
                 request,
-                "dashboard/admin/usuario_pdf_descarga.html",
-                {
-                    "pdf_base64": pdf_base64,
-                    "filename": f"usuario_{user.id}.pdf",
-                    "redirect_url": f"/dashboard/admin/empresa/{empresa.id}/",
-                    **admin_context(request.user),
-                },
+                "El usuario ya existia en el sistema y fue asociado a esta empresa correctamente.",
             )
+            return redirect("dashboard_admin_empresa_editar", empresa_id=empresa.id)
     return render(
         request,
         "dashboard/admin/empresa_usuario_nuevo.html",
         {
             "empresa": empresa,
             "form": form,
+            "confirmar_vinculacion": confirmar_vinculacion,
+            "usuario_existente": usuario_existente,
+            "rol_label": rol_label,
             **admin_context(request.user),
         },
     )

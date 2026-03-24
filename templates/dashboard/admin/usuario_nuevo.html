@@ -3,10 +3,85 @@
 
 {% block dashboard_content %}
 <div class="dashboard-welcome">
-  <h1 class="h3 mb-2">Cargar Usuario</h1>
-  <p class="text-muted mb-4">Formulario de alta de usuarios (pendiente).</p>
-  <div class="welcome-card">
-    <p class="mb-0">Esta vista sera usada para crear usuarios del sistema.</p>
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Usuarios</h1>
+      <p class="text-muted mb-0">Lista de usuarios por empresa con filtros y acceso rapido a edicion.</p>
+    </div>
+  </div>
+
+  <div class="welcome-card mb-4">
+    <form method="get" class="d-flex flex-column gap-2">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <input
+            type="search"
+            class="form-control"
+            name="q"
+            placeholder="Buscar por nombre, email o empresa"
+            value="{{ query }}"
+            autocomplete="off"
+          >
+        </div>
+        <div class="col-md-3">
+          <select name="empresa" class="form-select">
+            <option value="">Todas las empresas</option>
+            {% for empresa in empresas %}
+              <option value="{{ empresa.id }}" {% if filter_empresa == empresa.id|stringformat:"s" %}selected{% endif %}>
+                {{ empresa.nombre }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="rol" class="form-select">
+            <option value="">Todos los roles</option>
+            <option value="dueno" {% if filter_rol == "dueno" %}selected{% endif %}>Dueño</option>
+            <option value="empleado" {% if filter_rol == "empleado" %}selected{% endif %}>Empleado</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="orden" class="form-select">
+            <option value="asc" {% if filter_orden == "asc" %}selected{% endif %}>A-Z</option>
+            <option value="desc" {% if filter_orden == "desc" %}selected{% endif %}>Z-A</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-grid">
+          <button type="submit" class="btn btn-outline-light">Filtrar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-3">
+    {% for usuario_empresa in usuarios %}
+      <div class="col-sm-6 col-xl-4">
+        <div class="usuario-card h-100">
+          <div class="usuario-card-header">
+            <h2 class="h6 mb-1">
+              {{ usuario_empresa.usuario.nombre }} {{ usuario_empresa.usuario.apellido }}
+            </h2>
+            <span class="badge {% if usuario_empresa.rol == 'dueno' %}bg-primary{% else %}bg-secondary{% endif %}">
+              {{ usuario_empresa.get_rol_display }}
+            </span>
+          </div>
+          <p class="text-muted mb-1">{{ usuario_empresa.usuario.email }}</p>
+          <p class="text-muted mb-1">DNI: {{ usuario_empresa.usuario.dni }}</p>
+          <p class="text-muted mb-3">Empresa: {{ usuario_empresa.empresa.nombre }}</p>
+          <div class="usuario-card-actions">
+            <a class="btn btn-outline-light btn-sm" href="{% url 'dashboard_admin_empresa_usuario_editar' usuario_empresa.empresa.id usuario_empresa.usuario.id %}">
+              Editar usuario
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="welcome-card">
+          <p class="mb-0 text-muted">No se encontraron usuarios con los filtros seleccionados.</p>
+        </div>
+      </div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

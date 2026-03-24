@@ -20,8 +20,13 @@ Este documento resume los flujos implementados en el panel admin.
 
 **Usuarios por empresa**
 - Alta: `/dashboard/admin/empresa/<id>/usuarios/nuevo/`
-  - Password inicial fija: `gestorturnos2026`.
-  - Genera PDF descargable con credenciales.
+  - Password inicial fija: `gestorturnos2026` solo para usuario nuevo.
+  - Si el email ya existe, no crea duplicado: propone vincular usuario existente.
+  - Muestra confirmacion previa (aceptar/cancelar) antes de vincular.
+  - Regla por rol al vincular:
+    - `dueno`: puede estar asociado a multiples empresas.
+    - `empleado`: solo puede estar asociado a una empresa.
+  - Si crea usuario nuevo, genera PDF descargable con credenciales.
   - Redireccion automatica de regreso a empresa.
 - Edicion: `/dashboard/admin/empresa/<id>/usuarios/<usuario_id>/editar/`
   - Permite editar datos y resetear password.
@@ -29,6 +34,16 @@ Este documento resume los flujos implementados en el panel admin.
 - Eliminacion:
   - Si el usuario pertenece a una sola empresa, se elimina el usuario.
   - Si pertenece a mas de una, se desvincula solo de la empresa actual.
+
+**Vista global de usuarios**
+- Ruta: `/dashboard/admin/usuarios/`
+- Muestra cards con acceso rapido a editar usuario.
+- Filtros:
+  - texto (nombre/apellido/email/empresa),
+  - empresa,
+  - rol (`dueno`/`empleado`).
+- Orden alfabetico: `A-Z` o `Z-A`.
+- Presentacion: una card por usuario (sin repetir por multiples empresas).
 
 **Suscripciones y pagos**
 - Edicion de suscripcion: `/dashboard/admin/empresa/<id>/suscripcion/`

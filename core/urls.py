@@ -18,6 +18,7 @@ urlpatterns = [
     path('dashboard/admin/empresa/<int:empresa_id>/usuarios/<int:usuario_id>/editar/', views.admin_empresa_usuario_editar, name='dashboard_admin_empresa_usuario_editar'),
     path('dashboard/admin/empresa/<int:empresa_id>/usuarios/<int:usuario_id>/eliminar/', views.admin_empresa_usuario_eliminar, name='dashboard_admin_empresa_usuario_eliminar'),
     path('dashboard/admin/empresas/nueva/', views.admin_empresas_nueva, name='dashboard_admin_empresa_nueva'),
+    path('dashboard/admin/usuarios/', views.admin_usuarios_nuevo, name='dashboard_admin_usuarios'),
     path('dashboard/admin/usuarios/nuevo/', views.admin_usuarios_nuevo, name='dashboard_admin_usuario_nuevo'),
     path('dashboard/admin/complementos/', views.admin_complementos, name='dashboard_admin_complementos'),
     path('dashboard/admin/contabilidad/', views.admin_contabilidad, name='dashboard_admin_contabilidad'),

@@ -31,11 +31,18 @@ base.html
 - `templates/dashboard/base.html`
   - Layout del dashboard.
   - Sidebar con estado activo dinamico segun ruta.
+  - Incluye acceso admin a modulo `Usuarios`.
   - Carga `static/css/dashboard.css` y `static/js/dashboard.js`.
 - `templates/dashboard/seleccionar_empresa.html`
   - Selector para usuarios con mas de una empresa.
 - `templates/dashboard/admin/empresa*.html`
   - CRUD operativo de empresa, usuarios, suscripcion y pagos.
+- `templates/dashboard/admin/empresa_usuario_nuevo.html`
+  - Alta de usuario por empresa.
+  - Si el email existe, muestra confirmacion para vincular.
+- `templates/dashboard/admin/usuario_nuevo.html`
+  - Vista global de usuarios admin en cards.
+  - Filtros por empresa/rol/texto y orden alfabetico.
 - `templates/dashboard/admin/complemento*.html`
   - Carga de catalogos base (rubros, geo, planes, servicios base).
 - `templates/dashboard/admin/contabilidad.html`
@@ -56,6 +63,7 @@ base.html
 - Filtros dinamicos en:
   - Complementos (provincias/localidades/servicios base).
   - Empresas (busqueda y estado).
+  - Usuarios admin (texto, empresa, rol, orden).
   - Servicios publicos (rubro).
 - Dependencias geograficas en formularios de empresa:
   - Pais -> Provincia -> Localidad.
@@ -64,4 +72,4 @@ base.html
 **Rutas relacionadas**
 - Publico: `/`, `/servicios/`, `/servicios/turno/<slug>/`, `/login/`.
 - Dashboard usuario: `/dashboard/`, `/dashboard/empresa/<id>/`.
-- Dashboard admin: `/dashboard/admin/`, `/dashboard/admin/empresa/`, `/dashboard/admin/complementos/`, `/dashboard/admin/contabilidad/`.
+- Dashboard admin: `/dashboard/admin/`, `/dashboard/admin/empresa/`, `/dashboard/admin/usuarios/`, `/dashboard/admin/complementos/`, `/dashboard/admin/contabilidad/`.

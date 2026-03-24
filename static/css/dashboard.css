@@ -93,6 +93,29 @@
   gap: 8px;
 }
 
+.usuario-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--app-card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.usuario-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.usuario-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 991px) {
   .dashboard-sidebar {
     border-right: none;

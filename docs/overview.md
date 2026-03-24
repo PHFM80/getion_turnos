@@ -7,9 +7,12 @@ Gestion Turnos es una aplicacion Django para administrar empresas, usuarios, ser
 - Login con validaciones y visualizacion/ocultacion de password.
 - Vista publica de empresas/servicios y solicitud de turno (mock, sin persistencia de turnos).
 - Dashboard de usuario con selector de empresa cuando un usuario pertenece a mas de una.
-- Dashboard admin con modulos de empresa, complementos y contabilidad.
+- Dashboard admin con modulos de empresa, usuarios, complementos y contabilidad.
 - Alta/edicion de empresa con validaciones de geografia dependiente (pais, provincia, localidad).
 - Alta/edicion/eliminacion de usuarios por empresa y reset de password con PDF de credenciales.
+- Alta de usuarios por empresa con deteccion de email existente y confirmacion previa de vinculacion.
+- Regla de vinculacion por rol: `dueno` puede tener multiples empresas; `empleado` solo una.
+- Vista independiente de usuarios admin con filtros (empresa, rol, texto), orden alfabetico y cards.
 - Gestion de suscripcion (plan + periodicidad) y registro de pagos automaticos con reglas de vencimiento.
 - Contabilidad con filtros por anio/mes/rubro y metricas financieras.
 - Sincronizacion de suscripciones vencidas via comando de management.
@@ -34,5 +37,6 @@ Gestion Turnos es una aplicacion Django para administrar empresas, usuarios, ser
 - Admin:
   - `/dashboard/admin/`
   - `/dashboard/admin/empresa/`
+  - `/dashboard/admin/usuarios/`
   - `/dashboard/admin/complementos/`
   - `/dashboard/admin/contabilidad/`

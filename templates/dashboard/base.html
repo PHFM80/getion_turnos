@@ -17,6 +17,7 @@
           {% if request.user.is_staff or request.user.is_superuser %}
             <a href="/dashboard/admin/" class="sidebar-link {% if request.path == '/dashboard/admin/' %}active{% endif %}">Inicio</a>
             <a href="/dashboard/admin/empresa/" class="sidebar-link {% if '/dashboard/admin/empresa/' in request.path or request.path == '/dashboard/admin/empresas/' or request.path == '/dashboard/admin/empresas/nueva/' %}active{% endif %}">Empresa</a>
+            <a href="/dashboard/admin/usuarios/" class="sidebar-link {% if '/dashboard/admin/usuarios/' in request.path %}active{% endif %}">Usuarios</a>
             <a href="/dashboard/admin/complementos/" class="sidebar-link {% if '/dashboard/admin/complementos/' in request.path %}active{% endif %}">Complementos</a>
             <a href="/dashboard/admin/contabilidad/" class="sidebar-link {% if '/dashboard/admin/contabilidad/' in request.path %}active{% endif %}">Contabilidad</a>
           {% else %}

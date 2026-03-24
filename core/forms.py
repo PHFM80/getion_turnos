@@ -396,6 +396,8 @@ class UsuarioEmpresaCreateForm(forms.Form):
     telefono = forms.CharField(max_length=30)
 
     def __init__(self, *args, **kwargs):
+        self.empresa = kwargs.pop("empresa", None)
+        self.existing_user = None
         super().__init__(*args, **kwargs)
         self.fields["dni"].widget.attrs.update(
             {"inputmode": "numeric", "pattern": r"\d{7,8}", "maxlength": "8"}
@@ -411,14 +413,25 @@ class UsuarioEmpresaCreateForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
         user_model = get_user_model()
-        if user_model.objects.filter(email__iexact=email).exists():
-            raise ValidationError("Ya existe un usuario con ese email.")
+        self.existing_user = user_model.objects.filter(email__iexact=email).first()
+        if (
+            self.existing_user
+            and self.empresa
+            and self.existing_user.empresas.filter(empresa=self.empresa).exists()
+        ):
+            raise ValidationError("Ese usuario ya esta asociado a esta empresa.")
         return email
 
     def clean_dni(self):
         dni = self.cleaned_data["dni"].strip()
         if not dni.isdigit() or len(dni) not in (7, 8):
             raise ValidationError("El DNI debe tener 7 u 8 numeros.")
+        if self.existing_user:
+            if (self.existing_user.dni or "").strip() != dni:
+                raise ValidationError(
+                    "El email ingresado ya existe. Debes cargar el DNI ya registrado para ese usuario."
+                )
+            return dni
         user_model = get_user_model()
         if user_model.objects.filter(dni__iexact=dni).exists():
             raise ValidationError("Ya existe un usuario con ese DNI.")
@@ -430,10 +443,32 @@ class UsuarioEmpresaCreateForm(forms.Form):
             raise ValidationError("El telefono debe contener solo numeros.")
         if not (10 <= len(telefono) <= 15):
             raise ValidationError("El telefono debe tener entre 10 y 15 numeros.")
+        if self.existing_user:
+            if (self.existing_user.telefono or "").strip() != telefono:
+                raise ValidationError(
+                    "El email ingresado ya existe. Debes cargar el telefono ya registrado para ese usuario."
+                )
+            return telefono
         user_model = get_user_model()
         if user_model.objects.filter(telefono__iexact=telefono).exists():
             raise ValidationError("Ya existe un usuario con ese telefono.")
         return telefono
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.errors:
+            return cleaned_data
+
+        rol = cleaned_data.get("rol")
+        if self.existing_user and self.empresa and rol == "empleado":
+            relaciones = self.existing_user.empresas.select_related("empresa").exclude(empresa=self.empresa)
+            if relaciones.exists():
+                primera_relacion = relaciones.first()
+                raise ValidationError(
+                    f"El usuario ya esta asociado a {primera_relacion.empresa.nombre}. "
+                    "Un empleado solo puede estar asociado a una empresa."
+                )
+        return cleaned_data
 
 
 class UsuarioEmpresaEditForm(forms.Form):
